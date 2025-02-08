@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <conio.h>
 
 #define MAX_WORDS 100
 #define MAX_LENGTH 150
@@ -52,6 +53,25 @@ void saveToFile()
     printf("Dictionary saved successfully!\n");
 }
 
+int strcmp_IgnoreCase(const char *text, const char *word)
+{
+    // Create copies of the strings to avoid modifying the originals
+    char str1[strlen(text) + 1];
+    char str2[strlen(word) + 1];
+
+    strcpy(str1, text);
+    strcpy(str2, word);
+
+    // Convert both strings to lowercase
+    for (int i = 0; str1[i] != '\0'; i++)
+        str1[i] = tolower(str1[i]);
+
+    for (int i = 0; str2[i] != '\0'; i++)
+        str2[i] = tolower(str2[i]);
+
+    return strcmp(str1, str2);
+}
+
 void addWord()
 {
     if (wordCount >= MAX_WORDS)
@@ -86,25 +106,6 @@ void displayWords()
         printf("\tSynonyms: %s\n", strcmp_IgnoreCase(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
         printf("\tAntonyms: %s\n", strcmp_IgnoreCase(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
     }
-}
-
-int strcmp_IgnoreCase(const char *text, const char *word)
-{
-    // Create copies of the strings to avoid modifying the originals
-    char str1[strlen(text) + 1];
-    char str2[strlen(word) + 1];
-
-    strcpy(str1, text);
-    strcpy(str2, word);
-
-    // Convert both strings to lowercase
-    for (int i = 0; str1[i] != '\0'; i++)
-        str1[i] = tolower(str1[i]);
-
-    for (int i = 0; str2[i] != '\0'; i++)
-        str2[i] = tolower(str2[i]);
-
-    return strcmp(str1, str2);
 }
 
 void searchWord()
