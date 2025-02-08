@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "my_functions.h"
 
 #define MAX_WORDS 100
 #define MAX_LENGTH 150
@@ -15,6 +14,43 @@ struct
 } dict[MAX_WORDS];
 
 int wordCount = 0;
+
+void loadFromFile()
+{
+    FILE *file = fopen("dictionary-data.txt", "r");
+    if (!file)
+    {
+        printf("No existing dictionary file found.\n");
+        return;
+    }
+    int temp;
+    wordCount = 0;
+    while (fscanf(file, "%d:%[^:]:%[^:]:%[^\n]\n", &temp, dict[wordCount].word, dict[wordCount].antonyms, dict[wordCount].synonyms) != EOF)
+    {
+        wordCount++;
+    }
+    fclose(file);
+    printf("Dictionary loaded successfully!\n");
+}
+
+void saveToFile()
+{
+    printf("\nSaving Data to file...\n");
+    FILE *file = fopen("dictionary-data.txt", "w");
+    if (!file)
+    {
+        printf("Error saving file!\n");
+        return;
+    }
+
+    for (int i = 0; i < wordCount; i++)
+    {
+        fprintf(file, "%d:%s:%s:%s\n", i + 1, dict[i].word, dict[i].antonyms, dict[i].synonyms);
+    }
+
+    fclose(file);
+    printf("Dictionary saved successfully!\n");
+}
 
 void addWord()
 {
@@ -33,6 +69,7 @@ void addWord()
 
     wordCount++;
     printf("Word added successfully!\n");
+    saveToFile();
 }
 
 void displayWords()
@@ -46,8 +83,8 @@ void displayWords()
     for (int i = 0; i < wordCount; i++)
     {
         printf("%d. %s\n", i + 1, dict[i].word);
-        printf("\tSynonyms: %s\n", strcmp(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
-        printf("\tAntonyms: %s\n", strcmp(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
+        printf("\tSynonyms: %s\n", strcmp_IgnoreCase(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
+        printf("\tAntonyms: %s\n", strcmp_IgnoreCase(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
     }
 }
 
@@ -62,19 +99,12 @@ int strcmp_IgnoreCase(const char *text, const char *word)
 
     // Convert both strings to lowercase
     for (int i = 0; str1[i] != '\0'; i++)
-    {
         str1[i] = tolower(str1[i]);
-    }
-    for (int i = 0; str2[i] != '\0'; i++)
-    {
-        str2[i] = tolower(str2[i]);
-    }
 
-    // Use strstr to search for the lowercase word in the lowercase text
-    if (strcmp(str1, str2) == 0)
-    {
-        return 0;
-    }
+    for (int i = 0; str2[i] != '\0'; i++)
+        str2[i] = tolower(str2[i]);
+
+    return strcmp(str1, str2);
 }
 
 void searchWord()
@@ -96,8 +126,8 @@ void searchWord()
         {
             printf("Found in Location %d\n", index);
             printf("Word: %s\n", dict[index - 1].word);
-            printf("Synonyms: %s\n", strcmp(dict[index - 1].synonyms, "!none") == 0 ? "No Data" : dict[index - 1].synonyms);
-            printf("Antonyms: %s\n", strcmp(dict[index - 1].antonyms, "!none") == 0 ? "No Data" : dict[index - 1].antonyms);
+            printf("Synonyms: %s\n", strcmp_IgnoreCase(dict[index - 1].synonyms, "!none") == 0 ? "No Data" : dict[index - 1].synonyms);
+            printf("Antonyms: %s\n", strcmp_IgnoreCase(dict[index - 1].antonyms, "!none") == 0 ? "No Data" : dict[index - 1].antonyms);
         }
         else
         {
@@ -115,8 +145,8 @@ void searchWord()
             {
                 printf("Found in Location %d\n", i + 1);
                 printf("Word: %s\n", dict[i].word);
-                printf("Synonyms: %s\n", strcmp(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
-                printf("Antonyms: %s\n", strcmp(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
+                printf("Synonyms: %s\n", strcmp_IgnoreCase(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
+                printf("Antonyms: %s\n", strcmp_IgnoreCase(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
                 return;
             }
         }
@@ -133,8 +163,8 @@ void searchWord()
             {
                 printf("Found in Location %d\n", i + 1);
                 printf("Word: %s\n", dict[i].word);
-                printf("Synonyms: %s\n", strcmp(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
-                printf("Antonyms: %s\n", strcmp(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
+                printf("Synonyms: %s\n", strcmp_IgnoreCase(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
+                printf("Antonyms: %s\n", strcmp_IgnoreCase(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
                 return;
             }
         }
@@ -159,7 +189,7 @@ void updateWord()
             printf("Enter new word (or '!same' to keep the same): ");
             char newWord[MAX_LENGTH];
             scanf(" %[^\n]", newWord);
-            if (strcmp(newWord, "!same") != 0)
+            if (strcmp_IgnoreCase(newWord, "!same") != 0)
             {
                 strcpy(dict[i].word, newWord);
             }
@@ -167,7 +197,7 @@ void updateWord()
             printf("Enter new synonyms (or '!same' for no change, '!none' for no data): ");
             char newSynonyms[MAX_LENGTH];
             scanf(" %[^\n]", newSynonyms);
-            if (strcmp(newSynonyms, "!same") != 0)
+            if (strcmp_IgnoreCase(newSynonyms, "!same") != 0)
             {
                 strcpy(dict[i].synonyms, newSynonyms);
             }
@@ -175,34 +205,16 @@ void updateWord()
             printf("Enter new antonyms (or '!same' for no change, '!none' for no data): ");
             char newAntonyms[MAX_LENGTH];
             scanf(" %[^\n]", newAntonyms);
-            if (strcmp(newAntonyms, "!same") != 0)
+            if (strcmp_IgnoreCase(newAntonyms, "!same") != 0)
             {
                 strcpy(dict[i].antonyms, newAntonyms);
             }
-
             printf("Word updated successfully!\n");
+            saveToFile();
             return;
         }
     }
     printf("Word not found!\n");
-}
-
-void saveToFile()
-{
-    FILE *file = fopen("Dictionary/dictionary-data.txt", "w");
-    if (!file)
-    {
-        printf("Error saving file!\n");
-        return;
-    }
-
-    for (int i = 0; i < wordCount; i++)
-    {
-        fprintf(file, "%d:%s:%s:%s\n", i + 1, dict[i].word, dict[i].antonyms, dict[i].synonyms);
-    }
-
-    fclose(file);
-    printf("Dictionary saved successfully!\n");
 }
 
 void deleteWord()
@@ -221,28 +233,12 @@ void deleteWord()
             }
             wordCount--;
             printf("Word deleted successfully!\n");
+            saveToFile();
             return;
         }
     }
     printf("Word not found!\n");
-}
-
-void loadFromFile()
-{
-    FILE *file = fopen("Dictionary/dictionary-data.txt", "r");
-    if (!file)
-    {
-        printf("No existing dictionary file found.\n");
-        return;
-    }
-    int temp;
-    wordCount = 0;
-    while (fscanf(file, "%d:%[^:]:%[^:]:%[^\n]\n", &temp, dict[wordCount].word, dict[wordCount].antonyms, dict[wordCount].synonyms) != EOF)
-    {
-        wordCount++;
-    }
-    fclose(file);
-    printf("Dictionary loaded successfully!\n");
+    saveToFile();
 }
 
 void main()
@@ -251,7 +247,6 @@ void main()
     loadFromFile();
     do
     {
-        system("cls");
         fflush(stdin);
         printf("\nDictionary Menu:\n");
         printf("1. Add Word\n");
@@ -259,7 +254,7 @@ void main()
         printf("3. Search Word\n");
         printf("4. Delete Word\n");
         printf("5. Update Word\n");
-        printf("6. Save and Exit\n");
+        printf("6. Exit Program\n");
         printf("Enter your choice: ");
         scanf("%d", &choice);
         switch (choice)
@@ -280,7 +275,6 @@ void main()
             updateWord();
             break;
         case 6:
-            saveToFile();
             printf("\nShutting down...\n");
             exit(0);
         default:
@@ -288,5 +282,6 @@ void main()
         }
         printf("\nPress Any Key to Continue...\n");
         getch();
+        system("cls");
     } while (choice != 6);
 }
