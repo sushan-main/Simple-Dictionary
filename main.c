@@ -5,11 +5,12 @@
 #include <conio.h>
 
 #define MAX_WORDS 100
-#define MAX_LENGTH 150
+#define MAX_LENGTH 200
 
 struct
 {
     char word[MAX_LENGTH];
+    char meaning[MAX_LENGTH];
     char synonyms[MAX_LENGTH];
     char antonyms[MAX_LENGTH];
 } dict[MAX_WORDS];
@@ -26,7 +27,7 @@ void loadFromFile()
     }
     int temp;
     wordCount = 0;
-    while (fscanf(file, "%d:%[^:]:%[^:]:%[^\n]\n", &temp, dict[wordCount].word, dict[wordCount].antonyms, dict[wordCount].synonyms) != EOF)
+    while (fscanf(file, "%d:%[^:]:%[^:]:%[^:]:%[^\n]\n", &temp, dict[wordCount].word, dict[wordCount].meaning, dict[wordCount].antonyms, dict[wordCount].synonyms) != EOF)
     {
         wordCount++;
     }
@@ -46,7 +47,7 @@ void saveToFile()
 
     for (int i = 0; i < wordCount; i++)
     {
-        fprintf(file, "%d:%s:%s:%s\n", i + 1, dict[i].word, dict[i].antonyms, dict[i].synonyms);
+        fprintf(file, "%d:%s:%s:%s:%s\n", i + 1, dict[i].word, dict[i].meaning, dict[i].antonyms, dict[i].synonyms);
     }
 
     fclose(file);
@@ -82,6 +83,8 @@ void addWord()
 
     printf("Enter word: ");
     scanf(" %[^\n]", dict[wordCount].word);
+    printf("Enter meaning: ");
+    scanf(" %[^\n]", dict[wordCount].meaning);
     printf("Enter synonyms (comma separated, or '!none'): ");
     scanf(" %[^\n]", dict[wordCount].synonyms);
     printf("Enter antonyms (comma separated, or '!none'): ");
@@ -103,6 +106,7 @@ void displayWords()
     for (int i = 0; i < wordCount; i++)
     {
         printf("%d. %s\n", i + 1, dict[i].word);
+        printf("\tMeaning: %s\n", dict[i].meaning);
         printf("\tSynonyms: %s\n", strcmp_IgnoreCase(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
         printf("\tAntonyms: %s\n", strcmp_IgnoreCase(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
     }
@@ -125,8 +129,9 @@ void searchWord()
         scanf("%d", &index);
         if (index > 0 && index <= wordCount)
         {
-            printf("Found in Location %d\n", index);
+            printf("\nFound in Location %d\n", index);
             printf("Word: %s\n", dict[index - 1].word);
+            printf("Meaning: %s\n", dict[index - 1].meaning);
             printf("Synonyms: %s\n", strcmp_IgnoreCase(dict[index - 1].synonyms, "!none") == 0 ? "No Data" : dict[index - 1].synonyms);
             printf("Antonyms: %s\n", strcmp_IgnoreCase(dict[index - 1].antonyms, "!none") == 0 ? "No Data" : dict[index - 1].antonyms);
         }
@@ -144,8 +149,9 @@ void searchWord()
         {
             if (strcmp_IgnoreCase(dict[i].word, query) == 0)
             {
-                printf("Found in Location %d\n", i + 1);
+                printf("\nFound in Location %d\n", i + 1);
                 printf("Word: %s\n", dict[i].word);
+                printf("Meaning: %s\n", dict[i].meaning);
                 printf("Synonyms: %s\n", strcmp_IgnoreCase(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
                 printf("Antonyms: %s\n", strcmp_IgnoreCase(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
                 return;
@@ -162,8 +168,9 @@ void searchWord()
         {
             if (strstr(dict[i].synonyms, query) || strstr(dict[i].antonyms, query))
             {
-                printf("Found in Location %d\n", i + 1);
+                printf("\nFound in Location %d\n", i + 1);
                 printf("Word: %s\n", dict[i].word);
+                printf("\tMeaning: %s\n", dict[i].meaning);
                 printf("Synonyms: %s\n", strcmp_IgnoreCase(dict[i].synonyms, "!none") == 0 ? "No Data" : dict[i].synonyms);
                 printf("Antonyms: %s\n", strcmp_IgnoreCase(dict[i].antonyms, "!none") == 0 ? "No Data" : dict[i].antonyms);
                 return;
@@ -193,6 +200,14 @@ void updateWord()
             if (strcmp_IgnoreCase(newWord, "!same") != 0)
             {
                 strcpy(dict[i].word, newWord);
+            }
+
+            printf("Enter new meaning (or '!same' to keep the same): ");
+            char newMeaning[MAX_LENGTH];
+            scanf(" %[^\n]", newMeaning);
+            if (strcmp_IgnoreCase(newMeaning, "!same") != 0)
+            {
+                strcpy(dict[i].meaning, newMeaning);
             }
 
             printf("Enter new synonyms (or '!same' for no change, '!none' for no data): ");
